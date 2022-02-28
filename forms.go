@@ -9,6 +9,7 @@ import (
 const FormsUrl = apiHost + apiBase + "/forms"
 
 type Form struct {
+	Project           string   `json:"project"`
 	FormRoute         string   `json:"form_route"`
 	Enabled           bool     `json:"form_enabled,omitempty"`
 	SuccessMessage    string   `json:"success_message,omitempty"`
