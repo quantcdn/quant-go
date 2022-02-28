@@ -26,9 +26,9 @@ type NewForm struct {
 	Enabled               bool
 	SuccessMessage        string
 	FailureMessage        string
-	RequiredFields        string
-	HoneypotFields        string
-	RemoveFields          string
+	RequiredFields        []string
+	HoneypotFields        []string
+	RemoveFields          []string
 	DisableHtmlEmails     bool
 	IncludeSubmissionData bool
 	ToAddress             string
