@@ -19,7 +19,7 @@ type Client struct {
 	Base       string
 }
 
-func newClient(token string, client string, project string, host string, base string) *Client {
+func NewClient(token string, client string, project string, host string, base string) *Client {
 	return &Client{
 		HttpClient: http.DefaultClient,
 		ApiToken:   token,
@@ -30,7 +30,7 @@ func newClient(token string, client string, project string, host string, base st
 	}
 }
 
-func (c *Client) newRequest(path string, method string) (*http.Request, error) {
+func (c *Client) NewRequest(path string, method string) (*http.Request, error) {
 	url := fmt.Sprintf("%s/%s", apiHost, apiBase)
 
 	if !strings.HasPrefix(path, "/") {

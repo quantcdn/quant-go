@@ -52,7 +52,7 @@ type FormNotificationSlack struct {
 }
 
 func (c *Client) ListForms() ([]Form, error) {
-	request, err := c.newRequest("forms", "GET")
+	request, err := c.NewRequest("forms", "GET")
 
 	if err != nil {
 		return nil, err
@@ -70,7 +70,7 @@ func (c *Client) ListForms() ([]Form, error) {
 }
 
 func (c *Client) GetForm(formRoute string) (*Form, error) {
-	request, err := c.newRequest("forms", "GET")
+	request, err := c.NewRequest("forms", "GET")
 
 	if err != nil {
 		return nil, err
@@ -114,7 +114,7 @@ func (c *Client) AddForm(form NewForm) ([]byte, error) {
 }
 
 func (c *Client) DeleteForm(formRoute string) ([]byte, error) {
-	request, err := c.newRequest("forms", "DELETE")
+	request, err := c.NewRequest("forms", "DELETE")
 
 	if err != nil {
 		return nil, err
