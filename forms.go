@@ -9,88 +9,70 @@ import (
 const FormsUrl = apiHost + apiBase + "/forms"
 
 type Form struct {
-	Project           string   `json:"project"`
-	FormRoute         string   `json:"form_route"`
-	Enabled           bool     `json:"form_enabled,omitempty"`
-	SuccessMessage    string   `json:"success_message,omitempty"`
-	MandatoryMessage  string   `json:"mandatory_message,omitempty"`
-	FailureMessage    string   `json:"generic_message,omitempty"`
-	RequiredFields    []string `json:"form_mandatory,omitempty"`
-	HoneypotFields    []string `json:"form_honeypot,omitempty"`
-	RemoveFields      []string `json:"form_remove,omitempty"`
-	NotificationEmail FormNotificationEmail
-	NotificationSlack FormNotificationSlack
+	Url     string     `json:"url"`
+	Enabled string     `json:"form_enabled"`
+	Config  FormConfig `json:"form_config"`
 }
 
-type NewForm struct {
-	FormRoute             string // required
-	Enabled               bool
-	SuccessMessage        string
-	FailureMessage        string
-	RequiredFields        []string
-	HoneypotFields        []string
-	RemoveFields          []string
-	DisableHtmlEmails     bool
-	IncludeSubmissionData bool
-	ToAddress             string
-	CcAddress             string
-	FromAddress           string
-	Subject               string
-	SlackWebhook          string
+type FormConfig struct {
+	Target          string           `json:"target_url"`
+	HoneypotFields  []string         `json:"honeypot_fields"`
+	MandatoryFields []string         `json:"mandatory_fields"`
+	RemoveFields    []string         `json:"remove_fields"`
+	Notifications   FormNotification `json:"notifications,omitempty"`
+}
+
+type FormNotification struct {
+	Slack FormNotificationSlack `json:"slack,omitempty"`
+	Email FormNotificationEmail `json:"email,omitempty"`
 }
 
 type FormNotificationEmail struct {
-	DisableHtml           bool   `json:"email_text_only,omitempty"`
-	IncludeSubmissionData bool   `json:"email_include_results,omitempty"`
-	ToAddress             string `json:"notification_email_to,omitempty"`
-	CcAddress             string `json:"notification_email_cc,omitempty"`
-	FromAddress           string `json:"notification_email_from,omitempty"`
-	Subject               string `json:"notification_email_subject,omitempty"`
+	To      string                    `json:"to"`
+	Cc      string                    `json:"cc"`
+	From    string                    `json:"from"`
+	Subject string                    `json:"subject"`
+	Enabled bool                      `json:"enabled"`
+	Options FormNotificationEmailOpts `json:"options,omitempty"`
+}
+
+type FormNotificationEmailOpts struct {
+	TextOnly       bool `json:"text_only,omitempty"`
+	IncludeResults bool `json:"include_results,omitempty"`
 }
 
 type FormNotificationSlack struct {
-	Webhook string `json:"slack_webhook,omitempty"`
+	Webhook string `json:"webhook,omitempty"`
+	Enabled bool   `json:"enabled,omitempty"`
 }
 
+type FormQuery struct {
+	FormRoute string
+}
+
+// ListForms gathers all the forms for a given project.
 func (c *Client) ListForms() ([]Form, error) {
-	request, err := c.NewRequest("forms", "GET")
-
-	if err != nil {
-		return nil, err
-	}
-
-	res, err := c.doRequest(request)
-
-	if err != nil {
-		return nil, err
-	}
-
-	var forms []Form
-	json.Unmarshal(res, &forms)
-	return forms, nil
+	panic("Not implemented.")
 }
 
-func (c *Client) GetForm(formRoute string) (*Form, error) {
-	request, err := c.NewRequest("forms", "GET")
+// Return a form revision from the API.
+// v1 of the API treats forms as content revisions, this information
+// is bundled with a routes configuration. We need to collect the revision
+// information and then see if the latest revision has form configuration attached.
+func (c *Client) GetForm(query FormQuery) (FormConfig, error) {
+	revision, err := c.GetRevisionLatest(RevisionQuery{
+		Url: query.FormRoute,
+	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	request.Header.Set("Quant-Form", formRoute)
-	res, err := c.doRequest(request)
-
-	if err != nil {
-		return nil, err
-	}
-
-	var form *Form
-	json.Unmarshal(res, &form)
-
-	return form, nil
+	return revision.FormConfig
 }
 
-func (c *Client) AddForm(form NewForm) ([]byte, error) {
+// Add form configuration to a specific route.
+func (c *Client) AddForm(form Form) ([]byte, error) {
 	j, err := json.Marshal(form)
 
 	if err != nil {
@@ -103,7 +85,7 @@ func (c *Client) AddForm(form NewForm) ([]byte, error) {
 		return nil, err
 	}
 
-	req.Header.Set("Quant-Form", form.FormRoute)
+	req.Header.Set("Quant-Url", form.Url)
 
 	res, err := c.doRequest(req)
 
