@@ -103,7 +103,7 @@ func (c *Client) DeleteForm(formRoute string) ([]byte, error) {
 		return nil, err
 	}
 
-	request.Header.Set("Quant-Form", formRoute)
+	request.Header.Set("Quant-Url", formRoute)
 	res, err := c.doRequest(request)
 
 	if err != nil {
