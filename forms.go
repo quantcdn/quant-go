@@ -10,7 +10,7 @@ const FormsUrl = apiHost + apiBase + "/forms"
 
 type Form struct {
 	Url     string     `json:"url"`
-	Enabled string     `json:"form_enabled"`
+	Enabled bool       `json:"form_enabled"`
 	Config  FormConfig `json:"form_config"`
 }
 
