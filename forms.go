@@ -15,11 +15,14 @@ type Form struct {
 }
 
 type FormConfig struct {
-	Target          string           `json:"target_url"`
-	HoneypotFields  []string         `json:"honeypot_fields"`
-	MandatoryFields []string         `json:"mandatory_fields"`
-	RemoveFields    []string         `json:"remove_fields"`
-	Notifications   FormNotification `json:"notifications,omitempty"`
+	Target                string           `json:"target_url"`
+	HoneypotFields        []string         `json:"honeypot_fields"`
+	MandatoryFields       []string         `json:"mandatory_fields"`
+	RemoveFields          []string         `json:"remove_fields"`
+	SuccessMessage        string           `json:"success_message"`
+	ErrorMessageMandatory string           `json:"error_message_mandatory"`
+	ErrorMessageGeneric   string           `json:"error_message_generic"`
+	Notifications         FormNotification `json:"notifications,omitempty"`
 }
 
 type FormNotification struct {
