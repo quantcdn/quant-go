@@ -59,16 +59,12 @@ func (c *Client) ListForms() ([]Form, error) {
 // v1 of the API treats forms as content revisions, this information
 // is bundled with a routes configuration. We need to collect the revision
 // information and then see if the latest revision has form configuration attached.
-func (c *Client) GetForm(query FormQuery) (FormConfig, error) {
+func (c *Client) GetForm(query FormQuery) (fc FormConfig, err error) {
 	revision, err := c.GetRevisionLatest(RevisionQuery{
 		Url: query.FormRoute,
 	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return revision.FormConfig
+	fc = revision.FormConfig
+	return
 }
 
 // Add form configuration to a specific route.

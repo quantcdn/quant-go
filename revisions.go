@@ -2,7 +2,6 @@ package quant
 
 import (
 	"encoding/json"
-	"errors"
 	"strconv"
 )
 
@@ -33,35 +32,18 @@ type RevisionQuery struct {
 }
 
 // Get route revision information.
-func (c *Client) GetRevision(query RevisionQuery) (Revision, error) {
+func (c *Client) GetRevision(query RevisionQuery) (r Revision, err error) {
 	request, err := c.NewRequest("revisions", "GET")
-
-	if err != nil {
-		return nil, err
-	}
-	request.Header.set("Quant-Url", query.Url)
+	request.Header.Set("Quant-Url", query.Url)
 	response, err := c.doRequest(request)
-
-	if err != nil {
-		return nil, err
-	}
-
-	var revision Revision
-	json.Unmarshal(response.Body, &revision)
-
-	return revision, nil
+	json.Unmarshal(response, &r)
+	return
 }
 
 // Get the latest revision for a URL.
-func (c *Client) GetRevisionLatest(query RevisionQuery) (RevisionItem, error) {
+func (c *Client) GetRevisionLatest(query RevisionQuery) (r RevisionItem, err error) {
 	revision, err := c.GetRevision(query)
-	if err != nil {
-		return nil, err
-	}
 	key := strconv.FormatInt(int64(revision.PublishedRevision), 10)
-	revision, ok := revision.Revisions[key]
-	if !ok {
-		return nil, errors.New("No revisions found for %s", key)
-	}
-	return revision
+	r = revision.Revisions[key]
+	return
 }
