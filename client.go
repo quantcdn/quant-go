@@ -8,7 +8,7 @@ import (
 )
 
 const apiHost = "https://api.quantcdn.io"
-const apiBase = "/v1"
+const apiBase = "v1"
 
 type Client struct {
 	HttpClient *http.Client
@@ -19,26 +19,23 @@ type Client struct {
 	Base       string
 }
 
-func NewClient(token string, client string, project string, host string, base string) *Client {
+func NewClient(token string, client string, project string) *Client {
 	return &Client{
 		HttpClient: http.DefaultClient,
 		ApiToken:   token,
 		ApiClient:  client,
 		ApiProject: project,
-		Host:       host,
-		Base:       base,
+		Host:       apiHost,
+		Base:       apiBase,
 	}
 }
 
 func (c *Client) NewRequest(path string, method string) (*http.Request, error) {
-	url := fmt.Sprintf("%s/%s", apiHost, apiBase)
-
+	url := fmt.Sprintf("%s/%s", c.Host, c.Base)
 	if !strings.HasPrefix(path, "/") {
 		url = url + "/"
 	}
-
-	req, err := http.NewRequest(method, url, nil)
-
+	req, err := http.NewRequest(method, url+path, nil)
 	if err != nil {
 		return nil, err
 	}
