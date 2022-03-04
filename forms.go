@@ -89,6 +89,10 @@ func (c *Client) AddForm(form Form) ([]byte, error) {
 	return res, nil
 }
 
+func (c *Client) UpdateForm(form Form) ([]byte, error) {
+	return c.AddForm(form)
+}
+
 func (c *Client) DeleteForm(query RevisionQuery) ([]byte, error) {
 	request, err := c.NewRequest("forms", "DELETE")
 
