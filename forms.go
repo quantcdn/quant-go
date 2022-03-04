@@ -49,10 +49,6 @@ type FormNotificationSlack struct {
 	Enabled bool   `json:"enabled,omitempty"`
 }
 
-type FormQuery struct {
-	FormRoute string
-}
-
 // ListForms gathers all the forms for a given project.
 func (c *Client) ListForms() ([]Form, error) {
 	panic("Not implemented.")
@@ -62,10 +58,8 @@ func (c *Client) ListForms() ([]Form, error) {
 // v1 of the API treats forms as content revisions, this information
 // is bundled with a routes configuration. We need to collect the revision
 // information and then see if the latest revision has form configuration attached.
-func (c *Client) GetForm(query FormQuery) (fc FormConfig, err error) {
-	revision, err := c.GetRevisionLatest(RevisionQuery{
-		Url: query.FormRoute,
-	})
+func (c *Client) GetForm(query RevisionQuery) (fc FormConfig, err error) {
+	revision, err := c.GetRevisionLatest(query)
 	fc = revision.FormConfig
 	return
 }
@@ -95,14 +89,14 @@ func (c *Client) AddForm(form Form) ([]byte, error) {
 	return res, nil
 }
 
-func (c *Client) DeleteForm(formRoute string) ([]byte, error) {
+func (c *Client) DeleteForm(query RevisionQuery) ([]byte, error) {
 	request, err := c.NewRequest("forms", "DELETE")
 
 	if err != nil {
 		return nil, err
 	}
 
-	request.Header.Set("Quant-Url", formRoute)
+	request.Header.Set("Quant-Url", query.Url)
 	res, err := c.doRequest(request)
 
 	if err != nil {
