@@ -94,7 +94,7 @@ func (c *Client) UpdateForm(form Form) ([]byte, error) {
 }
 
 func (c *Client) DeleteForm(query RevisionQuery) ([]byte, error) {
-	request, err := c.NewRequest("forms", "DELETE")
+	request, err := c.NewRequest("form", "DELETE")
 
 	if err != nil {
 		return nil, err
