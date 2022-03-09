@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-const FormsUrl = apiHost + apiBase + "/forms"
+const FormsUrl = apiHost + "/" + apiBase + "/form"
 
 type Form struct {
 	Url     string     `json:"url"`
