@@ -58,39 +58,28 @@ func (c *Client) ListForms() ([]Form, error) {
 // v1 of the API treats forms as content revisions, this information
 // is bundled with a routes configuration. We need to collect the revision
 // information and then see if the latest revision has form configuration attached.
-func (c *Client) GetForm(query RevisionQuery) (fc FormConfig, err error) {
-	revision, err := c.GetRevisionLatest(query)
-	fc = revision.FormConfig
+func (c *Client) GetForm(query RevisionQuery) (f Form, err error) {
+	request, err := c.NewRequest("revisions", "GET")
+	request.Header.Set("Quant-Url", query.Url)
+	response, err := c.doRequest(request)
+	json.Unmarshal(response, &f)
 	return
 }
 
 // Add form configuration to a specific route.
-func (c *Client) AddForm(form Form) ([]byte, error) {
+func (c *Client) AddForm(form Form) (f Form, err error) {
 	j, err := json.Marshal(form)
-
-	if err != nil {
-		return nil, err
-	}
-
 	req, err := http.NewRequest("POST", FormsUrl, bytes.NewBuffer(j))
-
-	if err != nil {
-		return nil, err
-	}
-
 	req.Header.Set("Quant-Url", form.Url)
-
 	res, err := c.doRequest(req)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
+	json.Unmarshal(res, &f)
+	return
 }
 
-func (c *Client) UpdateForm(form Form) ([]byte, error) {
-	return c.AddForm(form)
+func (c *Client) UpdateForm(form Form) (f Form, err error) {
+	res, err := c.AddForm(form)
+	json.Unmarshal(res, &f)
+	return
 }
 
 func (c *Client) DeleteForm(query RevisionQuery) ([]byte, error) {
