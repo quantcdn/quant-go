@@ -3,6 +3,7 @@ package quant
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"net/http"
 )
 
@@ -72,15 +73,26 @@ func (c *Client) AddForm(form Form) (f Form, err error) {
 	req, err := http.NewRequest("POST", FormsUrl, bytes.NewBuffer(j))
 	req.Header.Set("Quant-Url", form.Url)
 	res, err := c.doRequest(req)
+
+	var apiError ApiError
+	json.Unmarshal(res, &apiError)
+
+	if apiError.Message != "" {
+		err = errors.New(apiError.Message)
+		return
+	}
+
 	json.Unmarshal(res, &f)
 	return
 }
 
+// Update form configuration.
 func (c *Client) UpdateForm(form Form) (f Form, err error) {
 	f, err = c.AddForm(form)
 	return
 }
 
+// Delete the form configuration.
 func (c *Client) DeleteForm(query RevisionQuery) ([]byte, error) {
 	request, err := c.NewRequest("form", "DELETE")
 
