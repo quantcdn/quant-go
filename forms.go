@@ -77,8 +77,7 @@ func (c *Client) AddForm(form Form) (f Form, err error) {
 }
 
 func (c *Client) UpdateForm(form Form) (f Form, err error) {
-	res, err := c.AddForm(form)
-	json.Unmarshal(res, &f)
+	f, err = c.AddForm(form)
 	return
 }
 
