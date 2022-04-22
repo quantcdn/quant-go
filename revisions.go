@@ -1,7 +1,10 @@
 package quant
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
+	"net/http"
 	"strconv"
 )
 
@@ -29,6 +32,32 @@ type RevisionInfo struct {
 
 type RevisionQuery struct {
 	Url string
+}
+
+type MarkupRevision struct {
+	Url             string `json:"url"`
+	FindAttachments bool   `json:"find_attachments"`
+	Content         []byte `json:"content"`
+	Published       bool   `json:"published"`
+}
+
+func (c *Client) CreateMarkupRevision(revision MarkupRevision, purge bool) (r Revision, err error) {
+	j, err := json.Marshal(revision)
+	req, err := http.NewRequest("POST", apiHost+"/"+apiBase+"/", bytes.NewBuffer(j))
+	if !purge {
+		req.Header.Set("Quant-Skip-Purge", "true")
+	}
+	res, err := c.doRequest(req)
+	var apiError ApiError
+	json.Unmarshal(res, &apiError)
+
+	if apiError.Message != "" {
+		err = errors.New(apiError.Message)
+		return
+	}
+
+	json.Unmarshal(res, &r)
+	return
 }
 
 // Get route revision information.
