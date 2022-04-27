@@ -2,6 +2,7 @@ package quant
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -30,12 +31,13 @@ func NewClient(token string, client string, project string) *Client {
 	}
 }
 
-func (c *Client) NewRequest(path string, method string) (*http.Request, error) {
+func (c *Client) NewRequest(path string, method string, buffer io.Reader) (*http.Request, error) {
 	url := fmt.Sprintf("%s/%s", c.Host, c.Base)
 	if !strings.HasPrefix(path, "/") {
 		url = url + "/"
 	}
-	req, err := http.NewRequest(method, url+path, nil)
+	req, err := http.NewRequest(method, url+path, buffer)
+
 	if err != nil {
 		return nil, err
 	}
@@ -55,5 +57,10 @@ func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 		return nil, err
 	}
 
-	return ioutil.ReadAll(res.Body)
+	body, err := ioutil.ReadAll(res.Body)
+	defer res.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+	return body, nil
 }

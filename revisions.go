@@ -1,7 +1,9 @@
 package quant
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
 	"strconv"
 )
 
@@ -10,6 +12,7 @@ type Revision struct {
 	PublishedRevision int                     `json:"published_revision"`
 	Sequence          int                     `json:"seq_num"`
 	Revisions         map[string]RevisionItem `json:"revisions"`
+	Url               string                  `json:"url"`
 }
 
 type RevisionItem struct {
@@ -19,6 +22,7 @@ type RevisionItem struct {
 	ByteLength     int        `json:"byte_length"`
 	DateTimestamp  int        `json:"date_timestamp"`
 	FormConfig     FormConfig `json:"form_config,omitempty"`
+	FormEnabled    bool       `json:"form_enabled,omitempty"`
 }
 
 type RevisionInfo struct {
@@ -31,12 +35,47 @@ type RevisionQuery struct {
 	Url string
 }
 
+type MarkupRevision struct {
+	Url             string `json:"url"`
+	FindAttachments bool   `json:"find_attachments"`
+	Content         []byte `json:"content"`
+	Published       bool   `json:"published"`
+}
+
+func (c *Client) AddMarkupRevision(revision MarkupRevision, skip bool) (r Revision, err error) {
+	j, err := json.Marshal(revision)
+	req, err := c.NewRequest("", "POST", bytes.NewBuffer(j))
+	if skip {
+		req.Header.Set("Quant-Skip-Purge", "true")
+	}
+
+	res, err := c.doRequest(req)
+
+	var apiError ApiError
+	json.Unmarshal(res, &apiError)
+	if apiError.Message != "" {
+		err = errors.New(apiError.Message)
+		return
+	}
+
+	err = json.Unmarshal(res, &r)
+	return
+}
+
 // Get route revision information.
 func (c *Client) GetRevision(query RevisionQuery) (r Revision, err error) {
-	request, err := c.NewRequest("revisions", "GET")
+	request, err := c.NewRequest("revisions", "GET", nil)
 	request.Header.Set("Quant-Url", query.Url)
-	response, err := c.doRequest(request)
-	json.Unmarshal(response, &r)
+	res, err := c.doRequest(request)
+
+	var apiError ApiError
+	json.Unmarshal(res, &apiError)
+	if apiError.Message != "" {
+		err = errors.New(apiError.Message)
+		return
+	}
+
+	json.Unmarshal(res, &r)
 	return
 }
 
