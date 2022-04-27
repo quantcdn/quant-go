@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"net/http"
 	"strconv"
 )
 
@@ -13,6 +12,7 @@ type Revision struct {
 	PublishedRevision int                     `json:"published_revision"`
 	Sequence          int                     `json:"seq_num"`
 	Revisions         map[string]RevisionItem `json:"revisions"`
+	Url               string                  `json:"url"`
 }
 
 type RevisionItem struct {
@@ -22,6 +22,7 @@ type RevisionItem struct {
 	ByteLength     int        `json:"byte_length"`
 	DateTimestamp  int        `json:"date_timestamp"`
 	FormConfig     FormConfig `json:"form_config,omitempty"`
+	FormEnabled    bool       `json:"form_enabled,omitempty"`
 }
 
 type RevisionInfo struct {
@@ -41,31 +42,40 @@ type MarkupRevision struct {
 	Published       bool   `json:"published"`
 }
 
-func (c *Client) CreateMarkupRevision(revision MarkupRevision, purge bool) (r Revision, err error) {
+func (c *Client) AddMarkupRevision(revision MarkupRevision, skip bool) (r Revision, err error) {
 	j, err := json.Marshal(revision)
-	req, err := http.NewRequest("POST", apiHost+"/"+apiBase+"/", bytes.NewBuffer(j))
-	if !purge {
+	req, err := c.NewRequest("", "POST", bytes.NewBuffer(j))
+	if skip {
 		req.Header.Set("Quant-Skip-Purge", "true")
 	}
+
 	res, err := c.doRequest(req)
+
 	var apiError ApiError
 	json.Unmarshal(res, &apiError)
+	if apiError.Message != "" {
+		err = errors.New(apiError.Message)
+		return
+	}
 
+	err = json.Unmarshal(res, &r)
+	return
+}
+
+// Get route revision information.
+func (c *Client) GetRevision(query RevisionQuery) (r Revision, err error) {
+	request, err := c.NewRequest("revisions", "GET", nil)
+	request.Header.Set("Quant-Url", query.Url)
+	res, err := c.doRequest(request)
+
+	var apiError ApiError
+	json.Unmarshal(res, &apiError)
 	if apiError.Message != "" {
 		err = errors.New(apiError.Message)
 		return
 	}
 
 	json.Unmarshal(res, &r)
-	return
-}
-
-// Get route revision information.
-func (c *Client) GetRevision(query RevisionQuery) (r Revision, err error) {
-	request, err := c.NewRequest("revisions", "GET")
-	request.Header.Set("Quant-Url", query.Url)
-	response, err := c.doRequest(request)
-	json.Unmarshal(response, &r)
 	return
 }
 

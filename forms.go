@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"net/http"
 )
 
 const FormsUrl = apiHost + "/" + apiBase + "/form"
@@ -60,17 +59,19 @@ func (c *Client) ListForms() ([]Form, error) {
 // is bundled with a routes configuration. We need to collect the revision
 // information and then see if the latest revision has form configuration attached.
 func (c *Client) GetForm(query RevisionQuery) (f Form, err error) {
-	request, err := c.NewRequest("revisions", "GET")
-	request.Header.Set("Quant-Url", query.Url)
-	response, err := c.doRequest(request)
-	json.Unmarshal(response, &f)
+	r, err := c.GetRevisionLatest(query)
+	f = Form{
+		Url:     r.FormConfig.Target,
+		Enabled: r.FormEnabled,
+		Config:  r.FormConfig,
+	}
 	return
 }
 
 // Add form configuration to a specific route.
 func (c *Client) AddForm(form Form) (f Form, err error) {
 	j, err := json.Marshal(form)
-	req, err := http.NewRequest("POST", FormsUrl, bytes.NewBuffer(j))
+	req, err := c.NewRequest("/form", "POST", bytes.NewBuffer(j))
 	req.Header.Set("Quant-Url", form.Url)
 	res, err := c.doRequest(req)
 
@@ -94,7 +95,7 @@ func (c *Client) UpdateForm(form Form) (f Form, err error) {
 
 // Delete the form configuration.
 func (c *Client) DeleteForm(query RevisionQuery) ([]byte, error) {
-	request, err := c.NewRequest("form", "DELETE")
+	request, err := c.NewRequest("form", "DELETE", nil)
 
 	if err != nil {
 		return nil, err

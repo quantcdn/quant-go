@@ -7,7 +7,7 @@ type Ping struct {
 }
 
 func (c *Client) Ping() (p Ping, err error) {
-	req, err := c.NewRequest("ping", "GET")
+	req, err := c.NewRequest("ping", "GET", nil)
 	res, err := c.doRequest(req)
 	json.Unmarshal(res, &p)
 	return
