@@ -10,8 +10,7 @@ on:
 jobs:
 
   test:
-    name: Matrix Test
-    needs: build
+    name: Unit test
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
